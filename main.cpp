@@ -106,9 +106,41 @@ int main(int argc, char* argv[]) {
                 cerr << "Error: Unsupported edge weight type: " << weightType << endl;
                 return 1;
             }
+             // Redimensiona a matriz edgeWeights com base no número de nós
+            int size = positions.size();
+            edgeWeights.resize(size, vector<float>(size, 0));
+
+            for (int i = 0; i < size; ++i) {
+                for (int j : graph[i]) {  // Itera pelas conexões do ponto i
+                    float x1 = positions[i].first;
+                    float y1 = positions[i].second;
+                    float x2 = positions[j].first;
+                    float y2 = positions[j].second;
+
+                    if (weightType == "EUC_2D") {
+                        edgeWeights[i][j] = euclidean_distance(x1, x2, y1, y2);
+                    } 
+                    else if (weightType == "MAN_2D") {
+                        edgeWeights[i][j] = manhattan_distance(x1, x2, y1, y2);
+                    } 
+                    else if (weightType == "MAX_2D") {
+                        edgeWeights[i][j] = maximum_distance(x1, x2, y1, y2);
+                    } 
+                    else if (weightType == "CEIL_2D") {
+                        edgeWeights[i][j] = ceil(euclidean_distance(x1, x2, y1, y2));
+                    } 
+                    else if (weightType == "GEO") {
+                        edgeWeights[i][j] = geographical_distance(x1, x2, y1, y2);
+                    } 
+                    else {
+                        cerr << "Error: Unsupported edge weight type: " << weightType << endl;
+                        return 1;
+                    }
+                }
+            }
         } else if(keyword == "EDGE_WEIGHT_FORMAT") iss >> weightFormat;
         else if(keyword == "DIMENSION"){
-            iss >> n; graph.resize(n); positions.resize(n);
+            iss >> n; graph.resize(n); positions.resize(n); edgeWeights.resize(n, vector<float>(n, INF));
         }
         else if(keyword == "EDGE_DATA_FORMAT") iss >> edgeFormat;
         else if(keyword == "NODE_COORD_TYPE") iss >> coordType;
@@ -139,9 +171,56 @@ int main(int argc, char* argv[]) {
                     }
                 }
             }
-        } else if(keyword == "EDGE_WEIGHT_SECTION"){
-            if(weightFormat == "FUNCTION"){
-                
+        } else if (keyword == "EDGE_WEIGHT_SECTION") {
+            int i = n, j = n; // n é o tamanho da matriz no caso FULL_MATRIX
+            if (weightFormat == "FUNCTION") continue; // Pesos serão calculados por função; nada a fazer aqui
+            else if (weightFormat == "FULL_MATRIX") {
+                edgeWeights.resize(n, vector<float>(n, 0)); // Redimensiona a matriz para n x n
+                for (int k = 0; k < n; ++k) {
+                    for (int l = 0; l < n; ++l) {
+                        file >> edgeWeights[k][l]; // Lê os valores diretamente
+                    }
+                }
+            } 
+            else if (weightFormat == "UPPER_ROW" || weightFormat == "UPPER_DIAG_ROW") {
+                edgeWeights.resize(n, vector<float>(n, 0)); // Redimensiona a matriz para n x n
+                bool includeDiagonal = (weightFormat == "UPPER_DIAG_ROW");
+                for (int k = 0; k < n; ++k) {
+                    for (int l = k + (includeDiagonal ? 0 : 1); l < n; ++l) {
+                        file >> edgeWeights[k][l]; // Lê valores acima da diagonal
+                        edgeWeights[l][k] = edgeWeights[k][l]; // Simetria
+                    }
+                }
+            } 
+            else if (weightFormat == "LOWER_ROW" || weightFormat == "LOWER_DIAG_ROW") {
+                edgeWeights.resize(n, vector<float>(n, 0)); // Redimensiona a matriz para n x n
+                bool includeDiagonal = (weightFormat == "LOWER_DIAG_ROW");
+                for (int k = 0; k < n; ++k) {
+                    for (int l = 0; l < k + (includeDiagonal ? 1 : 0); ++l) {
+                        file >> edgeWeights[k][l]; // Lê valores abaixo da diagonal
+                        edgeWeights[l][k] = edgeWeights[k][l]; // Simetria
+                    }
+                }
+            } 
+            else if (weightFormat == "UPPER_COL" || weightFormat == "UPPER_DIAG_COL") {
+                edgeWeights.resize(n, vector<float>(n, 0)); // Redimensiona a matriz para n x n
+                bool includeDiagonal = (weightFormat == "UPPER_DIAG_COL");
+                for (int l = 0; l < n; ++l) {
+                    for (int k = 0; k < l + (includeDiagonal ? 1 : 0); ++k) {
+                        file >> edgeWeights[k][l]; // Lê valores acima da diagonal (por coluna)
+                        edgeWeights[l][k] = edgeWeights[k][l]; // Simetria
+                    }
+                }
+            } 
+            else if (weightFormat == "LOWER_COL" || weightFormat == "LOWER_DIAG_COL") {
+                edgeWeights.resize(n, vector<float>(n, 0)); // Redimensiona a matriz para n x n
+                bool includeDiagonal = (weightFormat == "LOWER_DIAG_COL");
+                for (int l = 0; l < n; ++l) {
+                    for (int k = l + (includeDiagonal ? 0 : 1); k < n; ++k) {
+                        file >> edgeWeights[k][l]; // Lê valores abaixo da diagonal (por coluna)
+                        edgeWeights[l][k] = edgeWeights[k][l]; // Simetria
+                    }
+                }
             }
         } else if (keyword == "NAME" || keyword == "COMMENT" || keyword == "DISPLAY_DATA_TYPE") continue;
         else {
