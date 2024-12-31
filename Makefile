@@ -2,12 +2,12 @@ CC = gcc
 CFLAGS = -Wall -Wextra -g
 BIN_DIR = bin
 OBJ_DIR = obj
-SRC = main.cpp
+SRC = src/main.cpp
 OBJS = $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(SRC))
 
 all:
 	mkdir -p obj
-	g++ -Wall -Wextra -g main.cpp -o obj/main -lm
+	g++ -g src/main.cpp -o obj/main -lm
 
 $(BIN_DIR)/main: $(OBJS)
 	mkdir -p $(BIN_DIR)
