@@ -1,17 +1,6 @@
-#include <bits/stdc++.h>
 #include "twiceAroundTheTree.cpp"
 #include "branchAndBound.cpp"
 #include "christofides.cpp"
-
-using namespace std;
-using namespace std::chrono;
-
-#define _ ios_base::sync_with_stdio(0); cin.tie(0);
-#define ff first
-#define ss second
-#define pb push_back
-
-typedef long long ll;
 
 int euclidean_distance(float x1, float x2, float y1, float y2) {
     float x = x1 - x2;
@@ -156,9 +145,10 @@ int main(int argc, char* argv[]) {
     path.push_back(0);
     
     if(flag == "-b"){
+        double time_limit_seconds = 30 * 60;
         auto start = high_resolution_clock::now();
 
-        branch_and_bound(path, visited, 0, best_cost, edgeWeights);
+        branch_and_bound(path, visited, 0, best_cost, edgeWeights, start, time_limit_seconds);
 
         cout << "Custo total: " << best_cost << endl;
         
@@ -169,20 +159,31 @@ int main(int argc, char* argv[]) {
 
         cout << "Tempo de execução: " << seconds << " segundos" << endl;
     } else if (flag == "-t"){
+        double time_limit_seconds = 30 * 60;
         auto start = high_resolution_clock::now();
 
         auto result = twiceAroundTheTree(graph, edgeWeights);
-
-        cout << "Custo total: " << result.second << endl;
 
         auto stop = high_resolution_clock::now();
 
         auto duration = duration_cast<microseconds>(stop - start);
         double seconds = duration.count() / 1e6; 
 
+        cout << "Custo total: " << result.second << endl;
         cout << "Tempo de execução: " << seconds << " segundos" << endl;
     } else {
+        double time_limit_seconds = 30 * 60;
+        auto start = high_resolution_clock::now();
 
+        int result = christofides(edgeWeights);
+        
+        auto stop = high_resolution_clock::now();
+
+        auto duration = duration_cast<microseconds>(stop - start);
+        double seconds = duration.count() / 1e6; 
+
+        cout << "Custo total: " << result << endl;
+        cout << "Tempo de execução: " << seconds << " segundos" << endl;
     }
     
     file.close();

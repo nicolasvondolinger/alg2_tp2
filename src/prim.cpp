@@ -1,6 +1,14 @@
 #include <bits/stdc++.h>
 
 using namespace std;
+using namespace std::chrono;
+
+#define _ ios_base::sync_with_stdio(0); cin.tie(0);
+#define ff first
+#define ss second
+#define pb push_back
+
+typedef long long ll;
 
 pair<vector<int>, vector<vector<int>>> primMST(const vector<vector<int>> &edgeWeights)
 {
