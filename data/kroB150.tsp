@@ -1,6 +1,6 @@
-NAME: kroB150
-TYPE: TSP
-COMMENT: 150-city problem B (Krolak/Felts/Nelson)
+NAME : kroB150
+TYPE : TSP
+COMMENT : 150-city problem B (Krolak/Felts/Nelson)
 DIMENSION : 150
 EDGE_WEIGHT_TYPE : EUC_2D
 NODE_COORD_SECTION

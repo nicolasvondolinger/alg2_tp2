@@ -1,6 +1,6 @@
-NAME: kroC100
-TYPE: TSP
-COMMENT: 100-city problem C (Krolak/Felts/Nelson)
+NAME : kroC100
+TYPE : TSP
+COMMENT : 100-city problem C (Krolak/Felts/Nelson)
 DIMENSION : 100
 EDGE_WEIGHT_TYPE : EUC_2D
 NODE_COORD_SECTION

@@ -1,6 +1,6 @@
-NAME: kroB200
-TYPE: TSP
-COMMENT: 200-city problem B (Krolak/Felts/Nelson)
+NAME : kroB200
+TYPE : TSP
+COMMENT : 200-city problem B (Krolak/Felts/Nelson)
 DIMENSION : 200
 EDGE_WEIGHT_TYPE : EUC_2D
 NODE_COORD_SECTION

@@ -1,5 +1,5 @@
-NAME: kroA100
-TYPE: TSP
+NAME : kroA100
+TYPE : TSP
 COMMENT: 100-city problem A (Krolak/Felts/Nelson)
 DIMENSION : 100
 EDGE_WEIGHT_TYPE : EUC_2D

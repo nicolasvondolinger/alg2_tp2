@@ -1,8 +1,8 @@
-NAME: lin105
-TYPE: TSP
-COMMENT: 105-city problem (Subproblem of lin318)
+NAME : lin105
+TYPE : TSP
+COMMENT : 105-city problem (Subproblem of lin318)
 DIMENSION : 105
-EDGE_WEIGHT_TYPE: EUC_2D
+EDGE_WEIGHT_TYPE : EUC_2D
 NODE_COORD_SECTION
 1 63 71
 2 94 71
