@@ -6,7 +6,7 @@ Como rodar:
 
 2 - make
 
-3 - ./obj/main ALL_tsp/nome_do_arquivo.tsp -flag
+3 - ./obj/main data/nome_do_arquivo.tsp -flag
 
 Flags: 
        
