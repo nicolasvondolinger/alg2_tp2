@@ -74,12 +74,10 @@ int main(int argc, char* argv[]) {
     vector<vector<int>> graph;
     vector<vector<int>> edgeWeights;
         
-    
-    graph.resize(n); positions.resize(n);
+    // graph.resize(n); positions.resize(n);
 
     // Função de leitura do arquivo
     while (getline(file, line)) {
-        
         istringstream iss(line); iss >> keyword;
         string discard; iss >> discard;
         

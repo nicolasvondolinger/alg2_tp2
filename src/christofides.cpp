@@ -61,7 +61,7 @@ vector<int> find_odd_degree_vertices(const vector<pair<int, int>>& mst_edges, in
     return odd_vertices;
 }
 
-// Função para calcular o emparelhamento mínimo perfeito usando programação dinâmica
+// Função para calcular o emparelhamento mínimo perfeito
 vector<pair<int, int>> minimum_perfect_matching(const vector<int>& odd_vertices, const vector<vector<int>>& edgeWeights) {
     int m = odd_vertices.size();
     vector<pair<int, int>> matching;
