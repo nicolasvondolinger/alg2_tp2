@@ -69,9 +69,6 @@ void branch_and_bound(vector<int>& path, vector<bool>& visited, int current_cost
         best_cost = min(best_cost, current_cost);
         return;
     }
-
-    /* cout << "C: "<< current_cost << endl;
-    cout << "B: "<< best_cost << endl; */
     
     // Calcular o limite inferior (mínimo custo da árvore geradora)
     vector<bool> mst_visited(n, false);

@@ -1,6 +1,6 @@
 NAME : st70
 TYPE : TSP
-COMMENT: 70-city problem (Smith/Thompson)
+COMMENT : 70-city problem (Smith/Thompson)
 DIMENSION : 70
 EDGE_WEIGHT_TYPE : EUC_2D
 NODE_COORD_SECTION

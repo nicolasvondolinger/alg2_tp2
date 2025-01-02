@@ -73,12 +73,13 @@ int main(int argc, char* argv[]) {
     vector<pair<float, float>> positions;
     vector<vector<int>> graph;
     vector<vector<int>> edgeWeights;
-
-    print_edgeWeights(edgeWeights);
+        
+    
     graph.resize(n); positions.resize(n);
 
     // Função de leitura do arquivo
     while (getline(file, line)) {
+        
         istringstream iss(line); iss >> keyword;
         string discard; iss >> discard;
         
@@ -149,14 +150,13 @@ int main(int argc, char* argv[]) {
         auto start = high_resolution_clock::now();
 
         branch_and_bound(path, visited, 0, best_cost, edgeWeights, start, time_limit_seconds);
-
-        cout << "Custo total: " << best_cost << endl;
         
         auto stop = high_resolution_clock::now();
 
         auto duration = duration_cast<microseconds>(stop - start);
         double seconds = duration.count() / 1e6; 
 
+        cout << "Melhor custo: " << best_cost << endl;
         cout << "Tempo de execução: " << seconds << " segundos" << endl;
     } else if (flag == "-t"){
         double time_limit_seconds = 30 * 60;

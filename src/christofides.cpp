@@ -1,80 +1,76 @@
 #include <bits/stdc++.h>
 
 using namespace std;
-using namespace std::chrono;
 
-#define _ ios_base::sync_with_stdio(0); cin.tie(0);
-#define ff first
-#define ss second
-#define pb push_back
+#define INF_C 0x3f3f3f3f
 
-typedef long long ll;
-
-// Função para calcular o limite inferior usando MST (Arvore Geradora Mínima)
-int minimum_spanning_tree_cost_c(vector<vector<int>>& edgeWeights, vector<bool>& visited) {
+// Função para calcular a MST usando o algoritmo de Prim
+vector<pair<int, int>> minimum_spanning_tree_prim(const vector<vector<int>>& edgeWeights) {
     int n = edgeWeights.size();
-    vector<int> minEdge(n, INF);
+    vector<bool> visited(n, false);
+    vector<int> minEdge(n, INF_C), parent(n, -1);
     minEdge[0] = 0;
-    int mst_cost = 0;
-    int edges_in_mst = 0;
 
-    while (edges_in_mst < n) {
+    int mst_cost = 0;
+    vector<pair<int, int>> mst_edges;
+
+    for (int i = 0; i < n; i++) {
         int u = -1;
-        for (int i = 0; i < n; i++) {
-            if (!visited[i] && (u == -1 || minEdge[i] < minEdge[u])) {
-                u = i;
+        for (int j = 0; j < n; j++) {
+            if (!visited[j] && (u == -1 || minEdge[j] < minEdge[u])) {
+                u = j;
             }
         }
-        
+
+        if (minEdge[u] == INF_C) {
+            cerr << "O grafo não é conexo!" << endl;
+            return {};
+        }
+
         visited[u] = true;
         mst_cost += minEdge[u];
-        edges_in_mst++;
+        if (parent[u] != -1) {
+            mst_edges.emplace_back(parent[u], u);
+        }
 
-        // Atualiza os custos das arestas
         for (int v = 0; v < n; v++) {
             if (!visited[v] && edgeWeights[u][v] < minEdge[v]) {
                 minEdge[v] = edgeWeights[u][v];
+                parent[v] = u;
             }
         }
     }
 
-    return mst_cost;
+    return mst_edges;
 }
 
-// Função para encontrar os vértices de grau ímpar na MST
-vector<int> find_odd_degree_vertices(vector<vector<int>>& mst) {
-    int n = mst.size();
+// Função para encontrar vértices de grau ímpar na MST
+vector<int> find_odd_degree_vertices(const vector<pair<int, int>>& mst_edges, int n) {
     vector<int> degree(n, 0);
-    vector<int> odd_vertices;
-
-    // Calcula o grau de cada vértice
-    for (int i = 0; i < n; i++) {
-        for (int j : mst[i]) {
-            degree[i]++;
-        }
+    for (auto [u, v] : mst_edges) {
+        degree[u]++;
+        degree[v]++;
     }
 
-    // Encontra os vértices de grau ímpar
+    vector<int> odd_vertices;
     for (int i = 0; i < n; i++) {
-        if (degree[i] % 2 == 1) {
+        if (degree[i] % 2 != 0) {
             odd_vertices.push_back(i);
         }
     }
-
     return odd_vertices;
 }
 
-// Função para calcular o emparelhamento mínimo perfeito
-vector<pair<int, int>> minimum_perfect_matching(const vector<int>& odd_vertices, vector<vector<int>>& edgeWeights) {
-    vector<pair<int, int>> matching;
+// Função para calcular o emparelhamento mínimo perfeito usando programação dinâmica
+vector<pair<int, int>> minimum_perfect_matching(const vector<int>& odd_vertices, const vector<vector<int>>& edgeWeights) {
     int m = odd_vertices.size();
+    vector<pair<int, int>> matching;
     vector<bool> used(m, false);
 
-    // Emparelha vértices de forma gananciosa para minimizar o custo
     for (int i = 0; i < m; i++) {
         if (used[i]) continue;
         int best_match = -1;
-        int min_cost = INF;
+        int min_cost = INF_C;
 
         for (int j = i + 1; j < m; j++) {
             if (!used[j] && edgeWeights[odd_vertices[i]][odd_vertices[j]] < min_cost) {
@@ -93,18 +89,17 @@ vector<pair<int, int>> minimum_perfect_matching(const vector<int>& odd_vertices,
 }
 
 // Função para encontrar um circuito Euleriano
-vector<int> eulerian_circuit(int start, vector<vector<int>>& graph) {
+vector<int> eulerian_circuit(int start, vector<multiset<int>>& graph) {
     vector<int> circuit;
     stack<int> s;
-    vector<vector<int>> temp_graph = graph;
 
     s.push(start);
     while (!s.empty()) {
         int u = s.top();
-
-        if (!temp_graph[u].empty()) {
-            int v = temp_graph[u].back();
-            temp_graph[u].pop_back();
+        if (!graph[u].empty()) {
+            int v = *graph[u].begin();
+            graph[u].erase(graph[u].begin());
+            graph[v].erase(graph[v].find(u));
             s.push(v);
         } else {
             circuit.push_back(u);
@@ -116,46 +111,42 @@ vector<int> eulerian_circuit(int start, vector<vector<int>>& graph) {
     return circuit;
 }
 
-// Função principal do algoritmo de Christofides
+// Algoritmo de Christofides
 int christofides(vector<vector<int>>& edgeWeights) {
     int n = edgeWeights.size();
 
     // 1. Construção da Árvore Geradora Mínima (MST)
-    vector<bool> visited(n, false);
-    vector<vector<int>> mst(n);
-    int mst_cost = minimum_spanning_tree_cost_c(edgeWeights, visited);
+    vector<pair<int, int>> mst_edges = minimum_spanning_tree_prim(edgeWeights);
+    if (mst_edges.empty()) return -1;
 
     // Constrói o grafo da MST
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            if (visited[i] && visited[j] && edgeWeights[i][j] < INF) {
-                mst[i].push_back(j);
-                mst[j].push_back(i);
-            }
-        }
+    vector<multiset<int>> mst_graph(n);
+    for (auto [u, v] : mst_edges) {
+        mst_graph[u].insert(v);
+        mst_graph[v].insert(u);
     }
 
     // 2. Encontrar vértices de grau ímpar
-    vector<int> odd_vertices = find_odd_degree_vertices(mst);
+    vector<int> odd_vertices = find_odd_degree_vertices(mst_edges, n);
 
     // 3. Emparelhamento mínimo perfeito
     vector<pair<int, int>> matching = minimum_perfect_matching(odd_vertices, edgeWeights);
 
     // 4. Formar o multigrafo (combinação da MST com o matching)
-    for (auto& match : matching) {
-        mst[match.first].push_back(match.second);
-        mst[match.second].push_back(match.first);
+    for (auto [u, v] : matching) {
+        mst_graph[u].insert(v);
+        mst_graph[v].insert(u);
     }
 
     // 5. Encontrar o circuito Euleriano
-    vector<int> euler_circuit = eulerian_circuit(0, mst);
+    vector<int> euler_circuit_path = eulerian_circuit(0, mst_graph);
 
     // 6. Gerar o ciclo Hamiltoniano (removendo duplicatas)
     vector<bool> visited_hamiltonian(n, false);
     vector<int> hamiltonian_path;
     int total_cost = 0;
 
-    for (int node : euler_circuit) {
+    for (int node : euler_circuit_path) {
         if (!visited_hamiltonian[node]) {
             visited_hamiltonian[node] = true;
             if (!hamiltonian_path.empty()) {
