@@ -1,13 +1,69 @@
-#include "prim.cpp"
+#include <bits/stdc++.h>
+using namespace std;
+using namespace std::chrono;
 
+#define _ ios_base::sync_with_stdio(0); cin.tie(0);
+#define ff first
+#define ss second
+#define pb push_back
+
+typedef long long ll;
+
+// Função para encontrar a MST usando o algoritmo de Prim
+pair<vector<int>, vector<vector<int>>> primMST(const vector<vector<int>>& edgeWeights)
+{
+    int n = edgeWeights.size();
+
+    vector<bool> visited(n, false);
+    vector<int> parent(n, -1);
+    vector<int> key(n, 0x3f3f3f3f);
+    key[0] = 0;
+
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
+    pq.push({0, 0}); // ponto de partida
+
+    while (!pq.empty())
+    {
+        int u = pq.top().second;
+        pq.pop();
+
+        if (visited[u])
+            continue; // ignora se já foi visitado
+        visited[u] = true;
+
+        for (int v = 0; v < n; ++v)
+        {
+            if (!visited[v] && edgeWeights[u][v] < key[v])
+            {
+                key[v] = edgeWeights[u][v];
+                parent[v] = u;
+                pq.push({key[v], v});
+            }
+        }
+    }
+
+    // Recuperando as arestas/conexões dos vértices
+    vector<vector<int>> adjList(n);
+    for (int i = 1; i < n; ++i)
+    {
+        if (parent[i] != -1)
+        {
+            adjList[parent[i]].push_back(i);
+            adjList[i].push_back(parent[i]);
+        }
+    }
+
+    return {parent, adjList};
+}
+
+// Função DFS com limite de tempo
 void dfs(int node, const vector<vector<int>>& mst, vector<bool>& visited, vector<int>& path, 
          time_point<high_resolution_clock>& start_time, double time_limit_seconds, bool& time_exceeded)
 {
-
-    // Verificar se o tempo limite foi atingido
     auto now = high_resolution_clock::now();
     auto elapsed = duration_cast<seconds>(now - start_time).count();
-    if (elapsed >= time_limit_seconds) {
+    if (elapsed >= time_limit_seconds)
+    {
         time_exceeded = true;
         return; // Interromper a execução
     }
@@ -23,6 +79,7 @@ void dfs(int node, const vector<vector<int>>& mst, vector<bool>& visited, vector
     }
 }
 
+// Função para resolver o problema usando "Twice Around the Tree"
 pair<vector<int>, int> twiceAroundTheTree(vector<vector<int>>& graph, const vector<vector<int>>& edgeWeights)
 {
     vector<vector<int>> mst = primMST(edgeWeights).second;
@@ -37,18 +94,16 @@ pair<vector<int>, int> twiceAroundTheTree(vector<vector<int>>& graph, const vect
     visited[root] = true;
     path.push_back(root);
 
-    // Tempo de início e limite de tempo
     auto start_time = high_resolution_clock::now();
     double time_limit_seconds = 30 * 60; // 30 minutos
     bool time_exceeded = false; // Indicador de limite de tempo
 
-    // dfs para gerar um percurso que visita todos os vértices
     dfs(root, mst, visited, path, start_time, time_limit_seconds, time_exceeded);
 
-    // fecha o ciclo
+    // Fecha o ciclo
     path.push_back(root); 
 
-    // calcula o custo
+    // Calcula o custo
     for (size_t i = 0; i < path.size() - 1; ++i)
     {
         int u = path[i], v = path[i + 1];
