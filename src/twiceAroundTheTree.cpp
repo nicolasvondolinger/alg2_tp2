@@ -1,6 +1,5 @@
 #include <bits/stdc++.h>
 using namespace std;
-using namespace std::chrono;
 
 #define _ ios_base::sync_with_stdio(0); cin.tie(0);
 #define ff first
@@ -9,106 +8,110 @@ using namespace std::chrono;
 
 typedef long long ll;
 
-// Função para encontrar a MST usando o algoritmo de Prim
-pair<vector<int>, vector<vector<int>>> primMST(const vector<vector<int>>& edgeWeights)
-{
+// Função para calcular a MST usando o algoritmo de Prim
+vector<pair<int, int>> mst_prim(const vector<vector<int>>& edgeWeights) {
     int n = edgeWeights.size();
-
     vector<bool> visited(n, false);
-    vector<int> parent(n, -1);
-    vector<int> key(n, 0x3f3f3f3f);
-    key[0] = 0;
+    vector<int> minEdge(n, INT_MAX), parent(n, -1);
+    minEdge[0] = 0;
 
-    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
-    pq.push({0, 0}); // ponto de partida
+    vector<pair<int, int>> mst_edges;
 
-    while (!pq.empty())
-    {
-        int u = pq.top().second;
-        pq.pop();
+    for (int i = 0; i < n; i++) {
+        int u = -1;
+        for (int j = 0; j < n; j++) {
+            if (!visited[j] && (u == -1 || minEdge[j] < minEdge[u])) {
+                u = j;
+            }
+        }
 
-        if (visited[u])
-            continue; // ignora se já foi visitado
+        if (minEdge[u] == INT_MAX) {
+            cerr << "O grafo não é conexo!" << endl;
+            return {};
+        }
+
         visited[u] = true;
+        if (parent[u] != -1) {
+            mst_edges.emplace_back(parent[u], u);
+        }
 
-        for (int v = 0; v < n; ++v)
-        {
-            if (!visited[v] && edgeWeights[u][v] < key[v])
-            {
-                key[v] = edgeWeights[u][v];
+        for (int v = 0; v < n; v++) {
+            if (!visited[v] && edgeWeights[u][v] < minEdge[v]) {
+                minEdge[v] = edgeWeights[u][v];
                 parent[v] = u;
-                pq.push({key[v], v});
             }
         }
     }
 
-    // Recuperando as arestas/conexões dos vértices
-    vector<vector<int>> adjList(n);
-    for (int i = 1; i < n; ++i)
-    {
-        if (parent[i] != -1)
-        {
-            adjList[parent[i]].push_back(i);
-            adjList[i].push_back(parent[i]);
+    return mst_edges;
+}
+
+// Função para encontrar um circuito Euleriano
+vector<int> eulerian_circuito(int start, vector<multiset<int>>& graph) {
+    vector<int> circuit;
+    stack<int> s;
+
+    s.push(start);
+    while (!s.empty()) {
+        int u = s.top();
+        if (!graph[u].empty()) {
+            int v = *graph[u].begin();
+            graph[u].erase(graph[u].begin());
+            graph[v].erase(graph[v].find(u));
+            s.push(v);
+        } else {
+            circuit.push_back(u);
+            s.pop();
         }
     }
 
-    return {parent, adjList};
+    reverse(circuit.begin(), circuit.end());
+    return circuit;
 }
 
-// Função DFS com limite de tempo
-void dfs(int node, const vector<vector<int>>& mst, vector<bool>& visited, vector<int>& path, 
-         time_point<high_resolution_clock>& start_time, double time_limit_seconds, bool& time_exceeded)
-{
-    auto now = high_resolution_clock::now();
-    auto elapsed = duration_cast<seconds>(now - start_time).count();
-    if (elapsed >= time_limit_seconds)
-    {
-        time_exceeded = true;
-        return; // Interromper a execução
-    }
-
-    for (int neighbor : mst[node])
-    {
-        if (!visited[neighbor])
-        {
-            visited[neighbor] = true;
-            path.push_back(neighbor);
-            dfs(neighbor, mst, visited, path, start_time, time_limit_seconds, time_exceeded);
-        }
-    }
-}
+// Função para transformar o circuito Euleriano em um caminho Hamiltoniano
 
 // Função para resolver o problema usando "Twice Around the Tree"
-pair<vector<int>, int> twiceAroundTheTree(vector<vector<int>>& graph, const vector<vector<int>>& edgeWeights)
-{
-    vector<vector<int>> mst = primMST(edgeWeights).second;
-    
-    int n = graph.size();
-    vector<bool> visited(n, false);
-    vector<int> path;
-    int totalCost = 0;
+pair<vector<int>, int> twiceAroundTheTree(const vector<vector<int>>& edgeWeights) {
+    vector<pair<int, int>> mst_edges = mst_prim(edgeWeights); // Obtém as arestas da MST
+   
+    int n = edgeWeights.size();
+    vector<multiset<int>> graph(n); // Grafo para o circuito Euleriano
 
-    srand(time(NULL));
-    int root = rand() % n;
-    visited[root] = true;
-    path.push_back(root);
+    // Preenche o grafo com as arestas duplicadas da MST
+    for (const auto& edge : mst_edges) {
+        int u = edge.ff, v = edge.ss;
+        graph[u].insert(v);
+        graph[v].insert(u);
+    }
 
-    auto start_time = high_resolution_clock::now();
-    double time_limit_seconds = 30 * 60; // 30 minutos
-    bool time_exceeded = false; // Indicador de limite de tempo
+    // Gerando o circuito Euleriano
+    vector<int> eulerian_path = eulerian_circuito(0, graph); // Começa do nó 0
 
-    dfs(root, mst, visited, path, start_time, time_limit_seconds, time_exceeded);
+    // 6. Gerar o ciclo Hamiltoniano (removendo duplicatas)
+    vector<bool> visited_hamiltonian(n, false);
+    vector<int> hamiltonian_path;
+    int total_cost = 0;
+
+    for (int node : eulerian_path) {
+        if (!visited_hamiltonian[node]) {
+            visited_hamiltonian[node] = true;
+            if (!hamiltonian_path.empty()) {
+                total_cost += edgeWeights[hamiltonian_path.back()][node];
+            }
+            hamiltonian_path.push_back(node);
+        }
+    }
 
     // Fecha o ciclo
-    path.push_back(root); 
+    total_cost += edgeWeights[hamiltonian_path.back()][hamiltonian_path[0]];
 
-    // Calcula o custo
-    for (size_t i = 0; i < path.size() - 1; ++i)
-    {
-        int u = path[i], v = path[i + 1];
+    // Calculando o custo total do caminho Hamiltoniano
+    int totalCost = 0;
+    for (size_t i = 0; i < hamiltonian_path.size() - 1; ++i) {
+        int u = hamiltonian_path[i], v = hamiltonian_path[i + 1];
         totalCost += edgeWeights[u][v];
     }
 
-    return {path, totalCost};
+    return {hamiltonian_path, totalCost};
 }

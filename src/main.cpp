@@ -171,7 +171,7 @@ int main(int argc, char* argv[]) {
         double time_limit_seconds = 30 * 60;
         auto start = high_resolution_clock::now();
 
-        auto result = twiceAroundTheTree(graph, edgeWeights);
+        auto result = twiceAroundTheTree(edgeWeights);
 
         auto stop = high_resolution_clock::now();
 
