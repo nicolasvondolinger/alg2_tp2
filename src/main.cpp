@@ -1,6 +1,7 @@
 #include "twiceAroundTheTree.cpp"
 #include "branchAndBound.cpp"
 #include "christofides.cpp"
+#include <sys/resource.h>
 
 int euclidean_distance(float x1, float x2, float y1, float y2) {
     float x = x1 - x2;
@@ -36,6 +37,12 @@ void print_positions(vector<pair<float, float>> positions) {
         cout << i << " " << p.ff << " " << p.ss << endl; 
         i++;
     }
+}
+
+size_t getMemoryUsage() {
+    struct rusage usage;
+    getrusage(RUSAGE_SELF, &usage);
+    return usage.ru_maxrss; // Retorna o pico de uso de memória em KB
 }
 
 int main(int argc, char* argv[]) {
@@ -100,8 +107,9 @@ int main(int argc, char* argv[]) {
             while (getline(file, line)){
                 if (line == "EOF") break;
                 istringstream temp(line);
-                int p, x, y; temp >> p >> x >> y;
+                int p; float x, y; temp >> p >> x >> y;
                 positions[p-1].ff = x; positions[p-1].ss = y;
+                // cout << p << " " << x << " " << y << endl;
             }
         } else if (keyword == "NAME" || keyword == "COMMENT" || keyword == "DISPLAY_DATA_TYPE") continue;
         else {
@@ -154,8 +162,11 @@ int main(int argc, char* argv[]) {
         auto duration = duration_cast<microseconds>(stop - start);
         double seconds = duration.count() / 1e6; 
 
+        size_t memory_usage_kb = getMemoryUsage();
+
         cout << "Melhor custo: " << best_cost << endl;
         cout << "Tempo de execução: " << seconds << " segundos" << endl;
+        cout << "Memória utilizada: " << memory_usage_kb / 1024.0 << " MB" << endl;
     } else if (flag == "-t"){
         double time_limit_seconds = 30 * 60;
         auto start = high_resolution_clock::now();
@@ -167,8 +178,11 @@ int main(int argc, char* argv[]) {
         auto duration = duration_cast<microseconds>(stop - start);
         double seconds = duration.count() / 1e6; 
 
+        size_t memory_usage_kb = getMemoryUsage();
+
         cout << "Custo total: " << result.second << endl;
         cout << "Tempo de execução: " << seconds << " segundos" << endl;
+        cout << "Memória utilizada: " << memory_usage_kb / 1024.0 << " MB" << endl;
     } else {
         double time_limit_seconds = 30 * 60;
         auto start = high_resolution_clock::now();
@@ -180,8 +194,11 @@ int main(int argc, char* argv[]) {
         auto duration = duration_cast<microseconds>(stop - start);
         double seconds = duration.count() / 1e6; 
 
+        size_t memory_usage_kb = getMemoryUsage();
+
         cout << "Custo total: " << result << endl;
         cout << "Tempo de execução: " << seconds << " segundos" << endl;
+        cout << "Memória utilizada: " << memory_usage_kb / 1024.0 << " MB" << endl;
     }
     
     file.close();
